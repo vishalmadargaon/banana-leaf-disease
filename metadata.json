@@ -1,0 +1,6 @@
+{
+  "name": "Banana Leaf Disease Classifier",
+  "description": "A high-fidelity ML-powered application for classifying banana leaf diseases using environmental and physical features.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

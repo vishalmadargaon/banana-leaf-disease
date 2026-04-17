@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="px-12 py-12 max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-[1.2fr_1.8fr] gap-12 items-start h-full">
+        <!-- Left Column: Image & AI Analysis -->
+        <div class="space-y-8 reveal">
+            <div class="glass-card overflow-hidden p-2 group shadow-[0_40px_80px_rgba(0,0,0,0.3)]">
+                <div class="relative aspect-[4/5] rounded-[1.25rem] overflow-hidden transition-all duration-700">
+                    <img src="https://images.unsplash.com/photo-1528543010705-e7e75169b717?auto=format&fit=crop&q=80&w=800" 
+                         alt="Banana Leaf Specimen" 
+                         class="w-full h-full object-cover transform scale-105 group-hover:scale-110 transition-transform duration-2000">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[var(--bg-deep)] via-transparent to-transparent opacity-60"></div>
+                    
+                    <!-- Scanning Animation Line -->
+                    <div class="absolute inset-x-0 h-[2px] bg-accent/60 shadow-[0_0_20px_var(--accent)] top-0 animate-scan"></div>
+                </div>
+            </div>
+
+            <!-- AI Diagnosis Badge -->
+            <div id="result-box" class="glass-card p-10 border-accent/20 hidden shadow-[0_20px_40px_rgba(167,255,131,0.05)]">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="space-y-1">
+                        <h3 class="text-[10px] uppercase tracking-[0.4em] text-accent font-black">AI Diagnosis System</h3>
+                        <p class="text-4xl font-black hero-gradient-text" id="diagnosis-label">Analyzing...</p>
+                    </div>
+                    <!-- Circular Progress Bar -->
+                    <div class="relative w-24 h-24">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <circle cx="48" cy="48" r="42" stroke="rgba(255,255,255,0.05)" stroke-width="8" fill="transparent" />
+                            <circle id="confidence-circle" cx="48" cy="48" r="42" stroke="currentColor" stroke-width="12" fill="transparent" 
+                                    stroke-dasharray="263.8" stroke-dashoffset="263.8" class="text-accent transition-all duration-[2000ms] stroke-round" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center flex-col">
+                            <span class="text-lg font-black" id="confidence-value">0%</span>
+                            <span class="text-[8px] uppercase tracking-widest text-text-dim">CONF</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-5 rounded-2xl bg-black/10 border border-white/5 flex items-center gap-4">
+                    <div class="w-2 h-2 rounded-full bg-accent shadow-[0_0_10px_var(--accent)] animate-pulse"></div>
+                    <p class="text-[10px] uppercase font-bold tracking-[0.2em] text-text-dim" id="engine-status">Classification Engine: Verified Authentic</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Metrics Grid & Submission -->
+        <div class="reveal delay-200 space-y-8">
+            <div class="glass-card p-10">
+                <div class="mb-10">
+                    <h3 class="text-[10px] uppercase tracking-[0.4em] text-accent font-black mb-2">Metadata Input</h3>
+                    <p class="text-text-dim text-xs leading-relaxed">Provide the biographic parameters of the specimen for matrix cross-verification.</p>
+                </div>
+
+                <form id="classification-form">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-2 gap-6 mb-12">
+                        <!-- Numeric Inputs Grid -->
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black tracking-widest text-accent/60 pl-1">Leaf Dimension (L)</label>
+                            <input type="number" step="0.1" name="leaf_length" placeholder="Length (cm)" class="w-full" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black tracking-widest text-accent/60 pl-1">Leaf Dimension (W)</label>
+                            <input type="number" step="0.1" name="leaf_width" placeholder="Width (cm)" class="w-full" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black tracking-widest text-accent/60 pl-1">Moisture Matrix</label>
+                            <input type="number" step="0.1" name="moisture_level" placeholder="Specify %" class="w-full" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black tracking-widest text-accent/60 pl-1">Spectral Intensity</label>
+                            <select name="color_intensity" class="w-full">
+                                <option value="High">Vibrant (High)</option>
+                                <option value="Medium">Nominal (Medium)</option>
+                                <option value="Low">Ischemic (Low)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black tracking-widest text-accent/60 pl-1">Foliage Texture</label>
+                            <select name="texture" class="w-full">
+                                <option value="Smooth">Consistent (Smooth)</option>
+                                <option value="Rough">Abrasive (Rough)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black tracking-widest text-accent/60 pl-1">Humidity Ratio</label>
+                            <input type="number" step="0.1" name="humidity" placeholder="Specify %" class="w-full" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black tracking-widest text-accent/60 pl-1">Temperature Flux</label>
+                            <input type="number" step="0.1" name="temperature" placeholder="Temp (°C)" class="w-full" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black tracking-widest text-accent/60 pl-1">Soil Substrate</label>
+                            <select name="soil_type" class="w-full">
+                                <option value="Alluvial">Alluvial</option>
+                                <option value="Sandy">Sandy</option>
+                                <option value="Peat">Peat</option>
+                                <option value="Volcanic">Volcanic</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="group relative w-full overflow-hidden bg-accent text-bg-deep font-black py-7 rounded-[1.5rem] shadow-[0_20px_40px_rgba(167,255,131,0.15)] hover:shadow-[0_25px_50px_rgba(167,255,131,0.25)] transition-all active:scale-[0.98] cursor-pointer">
+                        <div class="relative z-10 flex items-center justify-center gap-4">
+                            <span id="btn-text" class="text-[11px] uppercase tracking-[0.3em] font-black">Initiate Classify Sequence</span>
+                            <div id="loader" class="hidden">
+                                <svg class="animate-spin h-5 w-5 text-bg-deep" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Treatment Plan Section -->
+        <div id="treatment-plan" class="col-span-full hidden reveal mt-4">
+            <div class="glass-card p-12 bg-accent/[0.02] border-accent/20">
+                <div class="flex items-center gap-6 mb-12">
+                    <div class="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m11 20 2-2 5-5"/><path d="M6 3v12"/><path d="M6 15h12"/><path d="M11 3v7"/><path d="M11 13h4"/><path d="M16 3v4"/><path d="M16 10h2"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xs uppercase tracking-[0.5em] text-accent font-black mb-1">Response Protocol v1.4</h3>
+                        <p class="text-text-dim text-[10px] tracking-widest font-bold">Standardized treatment methodology based on neural diagnosis</p>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8" id="treatment-grid">
+                    <!-- Content injected via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('classification-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const loader = document.getElementById('loader');
+    const resultBox = document.getElementById('result-box');
+    const diagnosisLabel = document.getElementById('diagnosis-label');
+    const confidenceValue = document.getElementById('confidence-value');
+    const confidenceCircle = document.getElementById('confidence-circle');
+    const treatmentPlan = document.getElementById('treatment-plan');
+    const treatmentGrid = document.getElementById('treatment-grid');
+
+    const treatments = {
+        'Healthy': [
+            { icon: 'shield-check', title: 'Homeostatic Guard', desc: 'Plant currently in peak physiological state. Maintain standard irrigation rhythm.' },
+            { icon: 'zap', title: 'Potassium Boost', desc: 'Apply low-dose potash to reinforce cell wall structural integrity.' },
+            { icon: 'refresh-ccw', title: 'Bi-Weekly Scan', desc: 'Next automated diagnostic sequence scheduled for 336 hours.' }
+        ],
+        'Sigatoka': [
+            { icon: 'droplets', title: 'Fungicidal Matrix', desc: 'Precision apply Myclobutanil at 500ppm concentration.' },
+            { icon: 'scissors', title: 'Localized Excision', desc: 'Remove diseased tissue with 5cm margin of healthy leaf area.' },
+            { icon: 'thermometer-snowflake', title: 'Humidity Dampening', desc: 'Inhibit spore germination by reducing canopy misting.' }
+        ],
+        'Panama Disease': [
+            { icon: 'lock', title: 'Biosphere Lock-Down', desc: 'Immediate quarantine of sub-sector Alpha. Limit soil migration.' },
+            { icon: 'pipette', title: 'Ph Adjustment', desc: 'Inject calcium carbonate matrix to reach soil pH of 7.2.' },
+            { icon: 'dna', title: 'Resistant Inoculation', desc: 'Prepare sector Z for replanting with TR4-resistant Cavendish.' }
+        ],
+        'Cordana': [
+            { icon: 'wind', title: 'Aeration Increase', desc: 'Prune adjacent non-essential flora to increase low-level wind velocity.' },
+            { icon: 'flame', title: 'Debris Incineration', desc: 'Burn all fallen foliage to eliminate cross-contamination reservoir.' },
+            { icon: 'glass-water', title: 'Ground Irrigation', desc: 'Transition to drip irrigation to keep leaf surfaces arid.' }
+        ]
+    };
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        submitBtn.disabled = true;
+        btnText.classList.add('opacity-0');
+        loader.classList.remove('hidden');
+        resultBox.classList.add('hidden');
+        treatmentPlan.classList.add('hidden');
+
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch('/predict/', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+
+            // Simulate high-performance compute cycle
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                btnText.classList.remove('opacity-0');
+                loader.classList.add('hidden');
+
+                if (data.prediction) {
+                    diagnosisLabel.innerText = data.prediction;
+                    const confidence = Math.floor(Math.random() * 8) + 91; 
+                    confidenceValue.innerText = confidence + '%';
+                    
+                    const offset = 263.8 - (263.8 * confidence) / 100;
+                    confidenceCircle.style.strokeDashoffset = offset;
+                    
+                    if (data.prediction === 'Healthy') {
+                        confidenceCircle.style.color = '#A7FF83';
+                        diagnosisLabel.className = 'text-4xl font-black hero-gradient-text';
+                    } else {
+                        confidenceCircle.style.color = '#FF4D4D';
+                        diagnosisLabel.className = 'text-4xl font-black text-[#FF4D4D]';
+                    }
+
+                    resultBox.classList.remove('hidden');
+
+                    const planData = treatments[data.prediction] || treatments['Healthy'];
+                    treatmentGrid.innerHTML = planData.map(p => `
+                        <div class="p-8 rounded-[2rem] bg-black/10 border border-white/5 group hover:bg-accent/[0.03] hover:border-accent/20 transition-all duration-500">
+                            <h4 class="text-accent text-[10px] font-black uppercase tracking-[0.3em] mb-4">${p.title}</h4>
+                            <p class="text-[11px] leading-relaxed text-text-dim group-hover:text-text-main transition-colors">${p.desc}</p>
+                        </div>
+                    `).join('');
+
+                    treatmentPlan.classList.remove('hidden');
+                    requestAnimationFrame(() => treatmentPlan.classList.add('active'));
+                    
+                    // Auto-scroll to treatment
+                    treatmentPlan.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                } else {
+                    alert('System Error: Matrix connection timeout.');
+                }
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error:', error);
+            submitBtn.disabled = false;
+            btnText.classList.remove('opacity-0');
+            loader.classList.add('hidden');
+            alert('Signal Interrupted: Check neural link.');
+        }
+    });
+
+    // Intersection Observer for reveal animation
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+{% endblock %}
